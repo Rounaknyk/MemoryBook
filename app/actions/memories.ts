@@ -114,13 +114,12 @@ export async function getMemoriesByDate(date: string): Promise<Memory[]> {
     try {
         const q = query(
             collection(db, MEMORIES_COLLECTION),
-            where('date', '==', date),
-            orderBy('createdAt', 'desc')
+            where('date', '==', date)
         );
 
         const querySnapshot = await getDocs(q);
 
-        return querySnapshot.docs.map((memoryDoc) => {
+        const memories = querySnapshot.docs.map((memoryDoc) => {
             const data = memoryDoc.data();
             return {
                 id: memoryDoc.id,
@@ -135,6 +134,9 @@ export async function getMemoriesByDate(date: string): Promise<Memory[]> {
                 updatedAt: data.updatedAt?.toDate() || new Date(),
             };
         });
+
+        // Sort by createdAt desc in memory to avoid composite index requirement
+        return memories.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     } catch (error) {
         console.error('Error getting memories by date:', error);
         return [];
