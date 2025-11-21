@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function DashboardLayout({
     children,
@@ -50,20 +51,13 @@ export default function DashboardLayout({
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                            <div className="w-10 h-10 bg-gradient-to-br from-pink-300 to-purple-300 rounded-full flex items-center justify-center">
-                                <svg
-                                    className="w-5 h-5 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    />
-                                </svg>
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                <Image
+                                    src="/logo.jpg"
+                                    alt="MemoryVault Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <span className="text-xl font-bold gradient-text">MemoryVault</span>
                         </Link>
