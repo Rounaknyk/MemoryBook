@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -47,20 +48,13 @@ export default function LoginPage() {
                             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                             className="inline-block"
                         >
-                            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-pink-300 to-purple-300 rounded-full flex items-center justify-center">
-                                <svg
-                                    className="w-8 h-8 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    />
-                                </svg>
+                            <div className="relative w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                                <Image
+                                    src="/logo.jpg"
+                                    alt="MemoryVault Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                         </motion.div>
                         <h1 className="text-3xl font-bold gradient-text mb-2">MemoryVault</h1>

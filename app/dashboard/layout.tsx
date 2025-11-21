@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import NextImage from 'next/image';
 
 export default function DashboardLayout({
     children,
@@ -52,7 +52,7 @@ export default function DashboardLayout({
                         {/* Logo */}
                         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                             <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                                <Image
+                                <NextImage
                                     src="/logo.jpg"
                                     alt="MemoryVault Logo"
                                     fill
