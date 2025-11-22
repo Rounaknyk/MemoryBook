@@ -7,7 +7,7 @@ export async function generateNostalgicMessage(
     lastMonthWeek: Memory[]
 ): Promise<string> {
     console.log('Checking Gemini API Key...');
-    const apiKey = "AIzaSyB7ymjutv52LP5NmL8boWU8GNvep0la2h0";
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
         console.error('Gemini API Key is missing in process.env');
