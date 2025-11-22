@@ -41,7 +41,7 @@ export default function CalendarPage() {
 
         async function loadDateMemories() {
             const dateStr = format(selectedDate as Date, 'yyyy-MM-dd');
-            const dateMemories = await getMemoriesByDate(coupleId, dateStr);
+            const dateMemories = await getMemoriesByDate(coupleId!, dateStr);
             setSelectedDateMemories(dateMemories);
         }
 
