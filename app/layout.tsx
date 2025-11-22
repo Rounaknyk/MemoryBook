@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
-    title: "MemoryVault - Our Shared Journal",
+    title: "MemoryBook - Our Shared Journal",
     description: "A private shared journal for Rounak & Sarika to cherish memories together",
 };
 

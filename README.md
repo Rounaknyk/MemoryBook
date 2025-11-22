@@ -1,4 +1,4 @@
-# MemoryVault 💕
+# MemoryBook 💕
 
 A beautiful, private shared journal web application for two people to capture and cherish their memories together. Built with Next.js, Firebase, and Cloudinary.
 

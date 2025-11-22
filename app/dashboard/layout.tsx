@@ -59,7 +59,7 @@ export default function DashboardLayout({
                                     className="object-cover"
                                 />
                             </div>
-                            <span className="text-xl font-bold gradient-text">MemoryVault</span>
+                            <span className="text-xl font-bold gradient-text">MemoryBook</span>
                         </Link>
 
                         {/* Navigation */}
