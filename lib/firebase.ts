@@ -11,19 +11,8 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-// Allowed emails for authentication
-const allowedEmails = [
-    process.env.NEXT_PUBLIC_ALLOWED_EMAIL_1,
-    process.env.NEXT_PUBLIC_ALLOWED_EMAIL_2,
-];
-
-export const isEmailAllowed = (email: string): boolean => {
-    return allowedEmails.includes(email);
-};
 
 export { app, auth, db };

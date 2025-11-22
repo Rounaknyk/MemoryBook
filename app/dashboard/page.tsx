@@ -12,17 +12,22 @@ import Button from '@/components/Button';
 import TimeMachineCard from '@/components/TimeMachineCard';
 
 export default function DashboardPage() {
-    const { user } = useAuth();
+    const { user, coupleId } = useAuth();
     const [todayMemories, setTodayMemories] = useState<Memory[]>([]);
     const [recentMemories, setRecentMemories] = useState<Memory[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadData() {
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
+
             const today = format(new Date(), 'yyyy-MM-dd');
             const [todayMems, recent] = await Promise.all([
-                getMemoriesByDate(today),
-                getRecentMemories(6),
+                getMemoriesByDate(coupleId, today),
+                getRecentMemories(coupleId, 6),
             ]);
 
             setTodayMemories(todayMems);
@@ -31,7 +36,7 @@ export default function DashboardPage() {
         }
 
         loadData();
-    }, []);
+    }, [coupleId]);
 
     const firstName = user?.email?.split('@')[0] || 'Friend';
 

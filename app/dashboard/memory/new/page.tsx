@@ -29,7 +29,7 @@ export default function NewMemoryPage() {
     const [location, setLocation] = useState<Location | undefined>();
     const [activityTags, setActivityTags] = useState<string[]>([]);
 
-    const { user } = useAuth();
+    const { user, coupleId } = useAuth();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,13 +83,18 @@ export default function NewMemoryPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (mediaFiles.length === 0) {
-            setError('Please select at least one image or video');
+        if (!title.trim()) {
+            setError('Title is required');
             return;
         }
 
-        if (!user) {
-            setError('You must be logged in');
+        if (mediaFiles.length === 0) {
+            setError('At least one image or video is required');
+            return;
+        }
+
+        if (!coupleId) {
+            setError('You must be linked with a partner to create memories');
             return;
         }
 
@@ -100,7 +105,7 @@ export default function NewMemoryPage() {
         try {
             // Upload all media files to Cloudinary in parallel
             const uploadPromises = mediaFiles.map(async (file, index) => {
-                const result = await uploadToCloudinary(file);
+                const result = await uploadToCloudinary(file, coupleId);
                 setUploadProgress(((index + 1) / mediaFiles.length) * 100);
                 return result.url;
             });
@@ -111,7 +116,7 @@ export default function NewMemoryPage() {
             const filteredNotes = notes.filter(note => note.trim() !== '');
 
             // Create memory in Firestore
-            const result = await createMemory({
+            const result = await createMemory(coupleId, {
                 date,
                 title,
                 caption,
@@ -119,7 +124,7 @@ export default function NewMemoryPage() {
                 imageUrls: imageUrls,
                 location,
                 activityTags,
-                userId: user.uid,
+                userId: user?.uid || '',
             });
 
             if (result.success && result.id) {

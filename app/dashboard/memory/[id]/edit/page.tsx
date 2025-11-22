@@ -14,10 +14,10 @@ import Loading from '@/components/Loading';
 import { motion } from 'framer-motion';
 
 export default function EditMemoryPage() {
+    const { coupleId } = useAuth();
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
-    const { user } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [memory, setMemory] = useState<Memory | null>(null);
@@ -36,7 +36,12 @@ export default function EditMemoryPage() {
 
     useEffect(() => {
         async function loadMemory() {
-            const mem = await getMemoryById(id);
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
+
+            const mem = await getMemoryById(coupleId, id);
             if (mem) {
                 setMemory(mem);
                 setDate(mem.date);
@@ -50,7 +55,7 @@ export default function EditMemoryPage() {
             setLoading(false);
         }
         loadMemory();
-    }, [id]);
+    }, [id, coupleId]);
 
     const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -110,8 +115,18 @@ export default function EditMemoryPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!user) {
-            setError('You must be logged in');
+        if (!title.trim()) {
+            setError('Title is required');
+            return;
+        }
+
+        if (existingMediaUrls.length === 0 && newMediaFiles.length === 0) {
+            setError('At least one image or video is required');
+            return;
+        }
+
+        if (!coupleId) {
+            setError('You must be linked with a partner to edit memories');
             return;
         }
 
@@ -119,29 +134,26 @@ export default function EditMemoryPage() {
         setError('');
 
         try {
-            const updateData: any = {
+            // Upload new media files
+            const newImageUrlPromises = newMediaFiles.map(file => uploadToCloudinary(file, coupleId));
+            const newImageUrls = await Promise.all(newImageUrlPromises);
+
+            // Combine existing and new image URLs
+            const allImageUrls = [...existingMediaUrls, ...newImageUrls.map(r => r.url)];
+
+            // Filter out empty notes
+            const filteredNotes = notes.filter(note => note.trim() !== '');
+
+            // Update memory
+            const result = await updateMemory(coupleId, id, {
                 date,
                 title,
                 caption,
-                notes: notes.filter(note => note.trim() !== ''),
-            };
-
-            // Upload new media files if any
-            let allMediaUrls = [...existingMediaUrls];
-
-            if (newMediaFiles.length > 0) {
-                const uploadPromises = newMediaFiles.map(file =>
-                    uploadToCloudinary(file).then(result => result.url)
-                );
-                const newUrls = await Promise.all(uploadPromises);
-                allMediaUrls = [...allMediaUrls, ...newUrls];
-            }
-
-            updateData.imageUrls = allMediaUrls;
-            updateData.location = location;
-            updateData.activityTags = activityTags;
-
-            const result = await updateMemory(id, updateData);
+                notes: filteredNotes,
+                imageUrls: allImageUrls,
+                location,
+                activityTags,
+            });
 
             if (result.success) {
                 router.push(`/dashboard/memory/${id}`);

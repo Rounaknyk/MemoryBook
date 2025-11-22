@@ -4,7 +4,7 @@ import React, { ButtonHTMLAttributes } from 'react';
 import { motion } from 'framer-motion';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
     loading?: boolean;
     fullWidth?: boolean;
 }
@@ -30,6 +30,8 @@ export default function Button({
             'bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg',
         ghost:
             'bg-transparent hover:bg-pink-50 text-gray-700',
+        outline:
+            'bg-white border-2 border-pink-300 hover:bg-pink-50 text-pink-600',
     };
 
     const widthStyles = fullWidth ? 'w-full' : '';

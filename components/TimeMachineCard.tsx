@@ -7,22 +7,25 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function TimeMachineCard() {
-    const { user } = useAuth();
+    const { coupleId } = useAuth();
     const [data, setData] = useState<TimeMachineData | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         async function loadMemories() {
-            if (!user) return;
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
 
-            const result = await getTimeMachineMemories(user.uid);
+            const result = await getTimeMachineMemories(coupleId);
             setData(result);
             setLoading(false);
         }
 
         loadMemories();
-    }, [user]);
+    }, [coupleId]);
 
     if (loading || !data || (data.onThisDay.length === 0 && data.lastMonth.length === 0 && data.lastMonthWeek.length === 0)) return null;
 

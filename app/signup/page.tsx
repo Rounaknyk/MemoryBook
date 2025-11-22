@@ -9,24 +9,32 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignupPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { signIn } = useAuth();
+    const { signUp } = useAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            await signIn(email, password);
-            router.push('/dashboard');
+            await signUp(email, password, displayName || undefined);
+            router.push('/dashboard/link-partner');
         } catch (err: any) {
-            setError(err.message || 'Failed to sign in. Please try again.');
+            setError(err.message || 'Failed to sign up. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -59,11 +67,19 @@ export default function LoginPage() {
                             </div>
                         </motion.div>
                         <h1 className="text-3xl font-bold gradient-text mb-2">MemoryBook</h1>
-                        <p className="text-gray-600">Our Shared Journal</p>
+                        <p className="text-gray-600">Create Your Shared Journal</p>
                     </div>
 
-                    {/* Login Form */}
+                    {/* Signup Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        <Input
+                            type="text"
+                            label="Name (optional)"
+                            placeholder="Enter your name"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                        />
+
                         <Input
                             type="email"
                             label="Email"
@@ -81,7 +97,17 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            autoComplete="current-password"
+                            autoComplete="new-password"
+                        />
+
+                        <Input
+                            type="password"
+                            label="Confirm Password"
+                            placeholder="Confirm your password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                            autoComplete="new-password"
                         />
 
                         {error && (
@@ -95,19 +121,16 @@ export default function LoginPage() {
                         )}
 
                         <Button type="submit" loading={loading} fullWidth>
-                            Sign In
+                            Sign Up
                         </Button>
                     </form>
 
                     {/* Footer */}
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-500 mb-2">
-                            A private space for you and your friend/partner💕
-                        </p>
                         <p className="text-sm text-gray-600">
-                            Don't have an account?{' '}
-                            <Link href="/signup" className="text-pink-500 hover:text-pink-600 font-medium">
-                                Sign Up
+                            Already have an account?{' '}
+                            <Link href="/login" className="text-pink-500 hover:text-pink-600 font-medium">
+                                Sign In
                             </Link>
                         </p>
                     </div>

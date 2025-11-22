@@ -10,8 +10,10 @@ import Image from 'next/image';
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import Loading from '@/components/Loading';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function MemoryDetailPage() {
+    const { coupleId } = useAuth();
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
@@ -24,12 +26,17 @@ export default function MemoryDetailPage() {
 
     useEffect(() => {
         async function loadMemory() {
-            const mem = await getMemoryById(id);
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
+
+            const mem = await getMemoryById(coupleId, id);
             setMemory(mem);
             setLoading(false);
         }
         loadMemory();
-    }, [id]);
+    }, [id, coupleId]);
 
     // Keyboard navigation for media carousel
     useEffect(() => {
@@ -52,8 +59,10 @@ export default function MemoryDetailPage() {
     }, [memory]);
 
     const handleDelete = async () => {
+        if (!coupleId) return;
+
         setDeleting(true);
-        const result = await deleteMemory(id);
+        const result = await deleteMemory(coupleId, id);
 
         if (result.success) {
             router.push('/dashboard/gallery');

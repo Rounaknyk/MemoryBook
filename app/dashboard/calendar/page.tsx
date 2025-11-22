@@ -8,8 +8,10 @@ import { getAllMemories, getMemoriesByDate } from '@/app/actions/memories';
 import { Memory } from '@/types/memory';
 import { format, parseISO } from 'date-fns';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CalendarPage() {
+    const { coupleId } = useAuth();
     const [memories, setMemories] = useState<Memory[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -18,28 +20,33 @@ export default function CalendarPage() {
 
     useEffect(() => {
         async function loadMemories() {
-            const allMemories = await getAllMemories();
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
+
+            const allMemories = await getAllMemories(coupleId);
             setMemories(allMemories);
             setLoading(false);
         }
         loadMemories();
-    }, []);
+    }, [coupleId]);
 
     // Get dates that have memories
     const memoryDates = memories.map((m) => parseISO(m.date));
 
     // Load memories when date is selected
     useEffect(() => {
-        if (!selectedDate) return;
+        if (!selectedDate || !coupleId) return;
 
         async function loadDateMemories() {
             const dateStr = format(selectedDate as Date, 'yyyy-MM-dd');
-            const dateMemories = await getMemoriesByDate(dateStr);
+            const dateMemories = await getMemoriesByDate(coupleId, dateStr);
             setSelectedDateMemories(dateMemories);
         }
 
         loadDateMemories();
-    }, [selectedDate]);
+    }, [selectedDate, coupleId]);
 
     const handleDayClick = (date: Date | undefined) => {
         if (!date) return;

@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { user, loading, signOut } = useAuth();
+    const { user, loading, signOut, hasPartner, partnerEmail } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
@@ -21,6 +21,16 @@ export default function DashboardLayout({
             router.push('/login');
         }
     }, [user, loading, router]);
+
+    // Redirect to partner linking if no partner (but allow access to link-partner page)
+    useEffect(() => {
+        if (!loading && user && !hasPartner) {
+            // Don't redirect if already on link-partner page
+            if (typeof window !== 'undefined' && !window.location.pathname.includes('/link-partner')) {
+                router.push('/dashboard/link-partner');
+            }
+        }
+    }, [user, loading, hasPartner, router]);
 
     if (loading) {
         return <Loading />;
@@ -53,8 +63,8 @@ export default function DashboardLayout({
                         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                             <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
                                 <NextImage
-                                    src="/logo.jpg"
-                                    alt="MemoryVault Logo"
+                                    src="/logo.png"
+                                    alt="MemoryBook Logo"
                                     fill
                                     className="object-cover"
                                 />
@@ -73,6 +83,11 @@ export default function DashboardLayout({
 
                         {/* User Menu */}
                         <div className="flex items-center gap-4">
+                            {partnerEmail && (
+                                <span className="hidden md:block text-xs text-gray-500">
+                                    💕 {partnerEmail.split('@')[0]}
+                                </span>
+                            )}
                             <span className="hidden sm:block text-sm text-gray-600">
                                 {user.email?.split('@')[0]}
                             </span>

@@ -4,13 +4,16 @@ export interface CloudinaryUploadResponse {
     resource_type: 'image' | 'video';
 }
 
-export async function uploadToCloudinary(file: File): Promise<CloudinaryUploadResponse> {
+export async function uploadToCloudinary(file: File, coupleId: string): Promise<CloudinaryUploadResponse> {
     const formData = new FormData();
 
     // Use environment variable for upload preset, or fall back to unsigned default
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
     formData.append('file', file);
     formData.append('upload_preset', uploadPreset);
+
+    // Add couple-scoped folder
+    formData.append('folder', `couples/${coupleId}/memories`);
 
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
@@ -50,28 +53,18 @@ export async function uploadToCloudinary(file: File): Promise<CloudinaryUploadRe
             resource_type: resourceType,
         };
     } catch (error: any) {
-        console.error('Cloudinary upload error:', error);
+        console.error('Error uploading to Cloudinary:', error);
         throw error;
     }
 }
 
+/**
+ * Delete media from Cloudinary
+ */
 export async function deleteFromCloudinary(publicId: string): Promise<void> {
-    // This would typically require server-side implementation with API key/secret
-    // For now, we'll create a server action for this
-    try {
-        const response = await fetch('/api/delete-image', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ publicId }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete image from Cloudinary');
-        }
-    } catch (error) {
-        console.error('Cloudinary delete error:', error);
-        throw error;
-    }
+    console.log('Cloudinary deletion is not implemented in unsigned mode.');
+    console.log('Public ID to delete:', publicId);
+    // Note: Deletion requires signed requests with API_SECRET
+    // For now, you can manually delete from Cloudinary dashboard
+    // or set up a server endpoint with API credentials
 }

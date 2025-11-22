@@ -11,9 +11,11 @@
     "dependencies": {
         "@google/generative-ai": "^0.24.1",
         "@googlemaps/markerclusterer": "^2.6.2",
+        "@opentelemetry/api": "^1.9.0",
         "@react-google-maps/api": "^2.20.7",
         "date-fns": "^4.1.0",
         "firebase": "^11.2.0",
+        "firebase-admin": "^13.6.0",
         "framer-motion": "^12.3.0",
         "next": "^16",
         "react": "^19",

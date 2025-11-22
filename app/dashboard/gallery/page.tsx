@@ -7,20 +7,27 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function GalleryPage() {
+    const { coupleId } = useAuth();
     const [memories, setMemories] = useState<Memory[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         async function loadMemories() {
-            const allMemories = await getAllMemories();
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
+
+            const allMemories = await getAllMemories(coupleId);
             setMemories(allMemories);
             setLoading(false);
         }
         loadMemories();
-    }, []);
+    }, [coupleId]);
 
     if (loading) {
         return (

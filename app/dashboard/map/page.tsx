@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { clusterMemories } from '@/utils/map-clustering';
+import { useAuth } from '@/contexts/AuthContext';
 
 const libraries: ('places' | 'geocoding')[] = ['places', 'geocoding'];
 
@@ -44,6 +45,7 @@ interface Cluster {
 }
 
 export default function MapPage() {
+    const { coupleId } = useAuth();
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
         libraries,
@@ -59,7 +61,12 @@ export default function MapPage() {
 
     useEffect(() => {
         async function loadMemories() {
-            const memoriesWithLocation = await getMemoriesWithLocations();
+            if (!coupleId) {
+                setLoading(false);
+                return;
+            }
+
+            const memoriesWithLocation = await getMemoriesWithLocations(coupleId);
             setMemories(memoriesWithLocation);
 
             // Initial clustering
@@ -77,7 +84,7 @@ export default function MapPage() {
             setLoading(false);
         }
         loadMemories();
-    }, []);
+    }, [coupleId]);
 
     const isVideo = (url: string) => {
         return url.includes('/video/upload/') || url.match(/\.(mp4|webm|ogg)$/i);

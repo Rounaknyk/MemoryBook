@@ -1,21 +1,28 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import {
     User,
+    createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut as firebaseSignOut,
     onAuthStateChanged,
     setPersistence,
-    browserLocalPersistence,
+    browserLocalPersistence
 } from 'firebase/auth';
-import { auth, isEmailAllowed } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
+    coupleId: string | null;
+    hasPartner: boolean;
+    partnerEmail: string | null;
     signIn: (email: string, password: string) => Promise<void>;
+    signUp: (email: string, password: string, displayName?: string) => Promise<void>;
     signOut: () => Promise<void>;
+    refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,20 +30,63 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [coupleId, setCoupleId] = useState<string | null>(null);
+    const [hasPartner, setHasPartner] = useState(false);
+    const [partnerEmail, setPartnerEmail] = useState<string | null>(null);
+
+    const fetchUserProfile = async (firebaseUser: User) => {
+        try {
+            // Get user profile from Firestore
+            const userRef = doc(db, 'users', firebaseUser.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                setCoupleId(userData.coupleId || null);
+                setHasPartner(!!userData.coupleId);
+
+                // If user has a couple, fetch partner info
+                if (userData.coupleId) {
+                    const coupleRef = doc(db, 'couples', userData.coupleId);
+                    const coupleSnap = await getDoc(coupleRef);
+
+                    if (coupleSnap.exists()) {
+                        const coupleData = coupleSnap.data();
+                        // Find partner email
+                        const partnerEmailValue = coupleData.partner1Email === firebaseUser.email
+                            ? coupleData.partner2Email
+                            : coupleData.partner1Email;
+                        setPartnerEmail(partnerEmailValue);
+                    }
+                }
+            } else {
+                setCoupleId(null);
+                setHasPartner(false);
+                setPartnerEmail(null);
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setCoupleId(null);
+            setHasPartner(false);
+            setPartnerEmail(null);
+        }
+    };
 
     useEffect(() => {
         // Set persistence to LOCAL for session persistence
         setPersistence(auth, browserLocalPersistence);
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            // Verify user email is allowed
-            if (user && user.email && !isEmailAllowed(user.email)) {
-                // Immediately sign out if email is not in whitelist
-                firebaseSignOut(auth);
-                setUser(null);
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            setUser(firebaseUser);
+
+            if (firebaseUser) {
+                await fetchUserProfile(firebaseUser);
             } else {
-                setUser(user);
+                setCoupleId(null);
+                setHasPartner(false);
+                setPartnerEmail(null);
             }
+
             setLoading(false);
         });
 
@@ -44,11 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signIn = async (email: string, password: string) => {
-        // Check if email is allowed before attempting sign in
-        if (!isEmailAllowed(email)) {
-            throw new Error('This email is not authorized to access this application.');
-        }
-
         try {
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error: any) {
@@ -64,17 +109,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const signUp = async (email: string, password: string, displayName?: string) => {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+            // Create user profile directly in Firestore (client-side)
+            await setDoc(doc(db, 'users', userCredential.user.uid), {
+                email,
+                displayName: displayName || null,
+                coupleId: null,
+                inviteCode: null,
+                createdAt: new Date(),
+            });
+
+        } catch (error: any) {
+            if (error.code === 'auth/email-already-in-use') {
+                throw new Error('This email is already registered.');
+            } else if (error.code === 'auth/weak-password') {
+                throw new Error('Password should be at least 6 characters.');
+            } else if (error.code === 'auth/invalid-email') {
+                throw new Error('Invalid email address.');
+            }
+            throw error;
+        }
+    };
+
     const signOut = async () => {
         try {
             await firebaseSignOut(auth);
+            setCoupleId(null);
+            setHasPartner(false);
+            setPartnerEmail(null);
         } catch (error) {
             console.error('Sign out error:', error);
             throw error;
         }
     };
 
+    const refreshUserProfile = async () => {
+        if (user) {
+            await fetchUserProfile(user);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+        <AuthContext.Provider value={{
+            user,
+            loading,
+            coupleId,
+            hasPartner,
+            partnerEmail,
+            signIn,
+            signUp,
+            signOut,
+            refreshUserProfile
+        }}>
             {children}
         </AuthContext.Provider>
     );

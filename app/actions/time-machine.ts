@@ -11,7 +11,7 @@ export interface TimeMachineData {
     message: string;
 }
 
-export async function getTimeMachineMemories(userId: string): Promise<TimeMachineData> {
+export async function getTimeMachineMemories(coupleId: string): Promise<TimeMachineData> {
     console.log('Server Action: GEMINI_API_KEY present?', !!process.env.GEMINI_API_KEY);
     try {
         const today = new Date();
@@ -22,9 +22,9 @@ export async function getTimeMachineMemories(userId: string): Promise<TimeMachin
         const lastMonthStart = subDays(lastMonthDate, 3);
         const lastMonthEnd = addDays(lastMonthDate, 3);
 
-        const memoriesRef = collection(db, 'memories');
-        const q = query(memoriesRef, where('userId', '==', userId));
-        const snapshot = await getDocs(q);
+        // Fetch all memories for this couple
+        const memoriesRef = collection(db, 'couples', coupleId, 'memories');
+        const snapshot = await getDocs(memoriesRef);
 
         const onThisDay: Memory[] = [];
         const lastMonth: Memory[] = [];
