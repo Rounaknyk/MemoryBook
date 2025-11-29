@@ -13,6 +13,8 @@ import ActivityTagSelector from '@/components/ActivityTagSelector';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
+import { sendMemoryNotification } from '@/lib/email';
+
 export default function NewMemoryPage() {
     const searchParams = useSearchParams();
     const dateParam = searchParams.get('date');
@@ -29,7 +31,7 @@ export default function NewMemoryPage() {
     const [location, setLocation] = useState<Location | undefined>();
     const [activityTags, setActivityTags] = useState<string[]>([]);
 
-    const { user, coupleId } = useAuth();
+    const { user, coupleId, partnerEmail } = useAuth();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,6 +130,21 @@ export default function NewMemoryPage() {
             });
 
             if (result.success && result.id) {
+                // Send email notification to partner if they exist
+                if (partnerEmail) {
+                    try {
+                        await sendMemoryNotification({
+                            to_email: partnerEmail,
+                            from_name: user?.displayName || user?.email || 'Your Partner',
+                            link: `${window.location.origin}/dashboard/memory/${result.id}`,
+                            message: `I just posted a new memory: "${title}"`,
+                        });
+                    } catch (emailError) {
+                        console.error('Failed to send notification email:', emailError);
+                        // Don't block the user flow if email fails
+                    }
+                }
+
                 router.push(`/dashboard/memory/${result.id}`);
             } else {
                 setError(result.error || 'Failed to create memory');
