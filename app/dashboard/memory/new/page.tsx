@@ -136,7 +136,7 @@ export default function NewMemoryPage() {
                         await sendMemoryNotification({
                             to_email: partnerEmail,
                             from_name: user?.displayName || user?.email || 'Your Partner',
-                            link: `${window.location.origin}/dashboard/memory/${result.id}`,
+                            link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://memory-book-pi.vercel.app'}/dashboard/memory/${result.id}`,
                             message: `I just posted a new memory: "${title}"`,
                         });
                     } catch (emailError) {
