@@ -13,7 +13,10 @@ import ActivityTagSelector from '@/components/ActivityTagSelector';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
+
+
 import { sendMemoryNotification } from '@/lib/email';
+import { getCoupleSettings } from '@/app/actions/settings';
 
 export default function NewMemoryPage() {
     const searchParams = useSearchParams();
@@ -133,12 +136,15 @@ export default function NewMemoryPage() {
                 // Send email notification to partner if they exist
                 if (partnerEmail) {
                     try {
-                        await sendMemoryNotification({
-                            to_email: partnerEmail,
-                            from_name: user?.displayName || user?.email || 'Your Partner',
-                            link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://memory-book-pi.vercel.app'}/dashboard/memory/${result.id}`,
-                            message: `I just posted a new memory: "${title}"`,
-                        });
+                        const settings = await getCoupleSettings(coupleId);
+                        if (settings.emailNotificationsEnabled) {
+                            await sendMemoryNotification({
+                                to_email: partnerEmail,
+                                from_name: user?.displayName || user?.email || 'Your Partner',
+                                link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://memory-book-pi.vercel.app'}/dashboard/memory/${result.id}`,
+                                message: `I just posted a new memory: "${title}"`,
+                            });
+                        }
                     } catch (emailError) {
                         console.error('Failed to send notification email:', emailError);
                         // Don't block the user flow if email fails
