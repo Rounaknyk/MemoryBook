@@ -497,7 +497,7 @@ const ASTRO_FACTS = [
   { icon: '🌙', text: 'You always say you love the space...but I know u love me (hehe)' },
   { icon: '⭐', text: 'If I could name a star after you, oh nvm you are already my moon' },
   { icon: '🪐', text: 'My whole universe literally revolves around you, Starika' },
-];
+];//..
 
 // ─── Main Component ────────────────────────────────────────────────────
 export default function BirthdayCelebration({ onComplete }: { onComplete: () => void }) {
