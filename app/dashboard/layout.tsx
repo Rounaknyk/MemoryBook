@@ -2,11 +2,20 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import NextImage from 'next/image';
+import dynamic from 'next/dynamic';
+
+// Dynamically import to avoid SSR issues with Three.js
+const BirthdayCelebration = dynamic(() => import('@/components/BirthdayCelebration'), { ssr: false });
+
+// Sarika's email — the birthday girl! 🎂
+const BIRTHDAY_EMAIL = 'sarika15rajput@gmail.com';
+// Set to today's date (April 14, 2026) — change this if you want it on a different day
+const BIRTHDAY_DATE = '2026-04-14';
 
 export default function DashboardLayout({
     children,
@@ -15,6 +24,24 @@ export default function DashboardLayout({
 }) {
     const { user, loading, signOut, hasPartner, partnerEmail } = useAuth();
     const router = useRouter();
+    const [showBirthday, setShowBirthday] = useState(false);
+
+    // Check if we should show birthday celebration (every time Sarika opens dashboard on her birthday)
+    useEffect(() => {
+        if (!loading && user) {
+            const isSarika = user.email?.toLowerCase() === BIRTHDAY_EMAIL.toLowerCase();
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const isBirthdayToday = today === BIRTHDAY_DATE;
+
+            if (isSarika && isBirthdayToday) {
+                setShowBirthday(true);
+            }
+        }
+    }, [user, loading]);
+
+    const handleBirthdayComplete = useCallback(() => {
+        setShowBirthday(false);
+    }, []);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -51,6 +78,10 @@ export default function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pastel-pink/20 via-pastel-lavender/20 to-pastel-peach/20">
+            {/* 🎂 Birthday Celebration Overlay */}
+            {showBirthday && (
+                <BirthdayCelebration onComplete={handleBirthdayComplete} />
+            )}
             {/* Navigation Header */}
             <motion.header
                 initial={{ y: -100 }}
